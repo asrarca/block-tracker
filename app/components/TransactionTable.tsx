@@ -74,7 +74,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ txs }) => {
             <th>Hash</th>
             <th>From</th>
             <th>To</th>
-            <th>Value (ETH)</th>
+            <th>Value</th>
             <th>Gas Used</th>
             <th>Timestamp</th>
             <th>Status</th>

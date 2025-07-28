@@ -128,7 +128,7 @@ const WalletSearch = () => {
           {walletData.transactions && walletData.transactions.length > 0 && (
             <div>
               <h2>Transactions</h2>
-              <TransactionTable txs={walletData.transactions}/>
+              <TransactionTable txs={walletData.transactions} />
             </div>
           )}
         </div>
