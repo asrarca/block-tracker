@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react'
+import TransactionTable from './TransactionTable';
 
 // Type definitions for API responses
 interface BalanceResponse {
@@ -53,24 +54,22 @@ const WalletSearch = () => {
     setError(null);
 
     try {
-      // Use Promise.all for concurrent API calls
+      // use Promise.all for concurrent API calls
       const [balanceResponse, transactionsResponse] = await Promise.all([
         fetch(`/api/wallet/balance?address=${walletAddress}`),
         fetch(`/api/wallet/transactions?address=${walletAddress}`)
       ]);
 
-      // Check if responses are ok
       if (!balanceResponse.ok || !transactionsResponse.ok) {
         throw new Error('Failed to fetch wallet data');
       }
 
-      // Parse JSON responses concurrently
+      // parse responses concurrently
       const [balanceData, transactionsData] = await Promise.all([
         balanceResponse.json() as Promise<BalanceResponse | ApiErrorResponse>,
         transactionsResponse.json() as Promise<Transaction[] | ApiErrorResponse>
       ]);
 
-      // Check for API errors
       if ('error' in balanceData) {
         throw new Error(balanceData.error);
       }
@@ -78,7 +77,7 @@ const WalletSearch = () => {
         throw new Error(transactionsData.error);
       }
 
-      // Combine the data
+      // all good
       const combinedData: WalletData = {
         ...balanceData,
         transactions: transactionsData as Transaction[]
@@ -100,6 +99,7 @@ const WalletSearch = () => {
     event.preventDefault();
     fetchData();
   };
+
 
   return (
     <div>
@@ -132,7 +132,10 @@ const WalletSearch = () => {
           <p>Address: {walletData.address}</p>
           <p>Balance: {walletData.balance} {walletData.unit}</p>
           {walletData.transactions && walletData.transactions.length > 0 && (
-            <p>Transactions: {walletData.transactions.length} found</p>
+            <div>
+              <h2>Transactions</h2>
+              <TransactionTable txs={walletData.transactions}/>
+            </div>
           )}
         </div>
       )}      
