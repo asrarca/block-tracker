@@ -10,6 +10,18 @@ const config = {
       name: 'Binance Chain',
       unit: 'BNB',
     },
+    137: {
+      name: 'Polygon',
+      unit: 'MATIC',
+    },
+    42161: {
+      name: 'Arbitrum',
+      unit: 'ARBI',
+    },
+    8453: {
+      name: 'Base Chain',
+      unit: 'BASE',
+    },
   },
 };
 

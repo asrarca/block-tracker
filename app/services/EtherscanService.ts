@@ -126,7 +126,7 @@ export class EtherscanService {
 
     // Get the correct unit for the chain
     const chainInfo = config.CHAINS[parseInt(chainId) as keyof typeof config.CHAINS];
-    const unit = chainInfo ? chainInfo.unit : 'ETH';
+    const unit = chainInfo ? chainInfo.unit : '?';
 
     return {
       address,
@@ -153,6 +153,7 @@ export class EtherscanService {
     }, chainId);
 
     const data = await this.fetchFromAPI(url);
+    
     return this.handleTransactionsResponse(data, 'Failed to fetch wallet transactions');
   }
 
