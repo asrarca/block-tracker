@@ -1,33 +1,13 @@
 'use client';
 import React, { useState } from 'react'
 import TransactionTable from './TransactionTable';
+import { Transaction } from '../types/Transaction';
 
 // Type definitions for API responses
 interface BalanceResponse {
   address: string;
   balance: string;
   unit: string;
-}
-
-interface Transaction {
-  blockNumber: string;
-  timeStamp: string;
-  hash: string;
-  nonce: string;
-  blockHash: string;
-  transactionIndex: string;
-  from: string;
-  to: string;
-  value: string;
-  gas: string;
-  gasPrice: string;
-  isError: string;
-  txreceipt_status: string;
-  input: string;
-  contractAddress: string;
-  cumulativeGasUsed: string;
-  gasUsed: string;
-  confirmations: string;
 }
 
 interface WalletData extends BalanceResponse {
