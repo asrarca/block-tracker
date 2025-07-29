@@ -43,6 +43,8 @@ const WalletSearch = () => {
       ]);
 
       if (!balanceResponse.ok || !transactionsResponse.ok) {
+        console.log({balanceResponse});
+        console.log({transactionsResponse});
         throw new Error('Failed to fetch wallet data');
       }
 
