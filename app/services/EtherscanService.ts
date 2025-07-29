@@ -29,6 +29,14 @@ export class EtherscanService {
   }
 
   /**
+   * Extract chain ID from request parameters
+   */
+  extractChainId(req: NextRequest): string {
+    const { searchParams } = new URL(req.url);
+    return searchParams.get('chainid') || '1';
+  }
+
+  /**
    * Validate wallet address
    */
   validateAddress(address: string): void {
@@ -40,9 +48,9 @@ export class EtherscanService {
   /**
    * Build Etherscan API URL with parameters
    */
-  private buildUrl(params: Record<string, string>): string {
+  private buildUrl(params: Record<string, string>, chainId: string = '1'): string {
     const urlParams = new URLSearchParams({
-      chainid: '1',
+      chainid: chainId,
       apikey: this.apiKey,
       ...params
     });
@@ -100,7 +108,7 @@ export class EtherscanService {
   /**
    * Get wallet balance
    */
-  async getBalance(address: string): Promise<BalanceResult> {
+  async getBalance(address: string, chainId: string = '1'): Promise<BalanceResult> {
     this.validateAddress(address);
 
     const url = this.buildUrl({
@@ -108,25 +116,29 @@ export class EtherscanService {
       action: 'balance',
       address,
       tag: 'latest'
-    });
+    }, chainId);
 
     const data = await this.fetchFromAPI(url);
     const result = this.handleBalanceResponse(data, 'Failed to fetch wallet balance');
 
-    // Convert Wei to ETH
-    const balanceInEth = parseFloat(result) / 1e18;
+    // Convert Wei to native currency
+    const balanceInNative = parseFloat(result) / 1e18;
+
+    // Get the correct unit for the chain
+    const chainInfo = config.CHAINS[parseInt(chainId) as keyof typeof config.CHAINS];
+    const unit = chainInfo ? chainInfo.unit : '?';
 
     return {
       address,
-      balance: balanceInEth.toFixed(6),
-      unit: 'ETH'
+      balance: balanceInNative.toFixed(6),
+      unit
     };
   }
 
   /**
    * Get wallet transactions
    */
-  async getTransactions(address: string, page = '1', offset = '0'): Promise<Transaction[]> {
+  async getTransactions(address: string, chainId: string = '1', page = '1', offset = '0'): Promise<Transaction[]> {
     this.validateAddress(address);
 
     const url = this.buildUrl({
@@ -138,9 +150,10 @@ export class EtherscanService {
       page,
       offset,
       sort: 'DESC'
-    });
+    }, chainId);
 
     const data = await this.fetchFromAPI(url);
+    
     return this.handleTransactionsResponse(data, 'Failed to fetch wallet transactions');
   }
 

@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import TransactionTable from './TransactionTable';
 import { Transaction } from '../types/Transaction';
+import config from '../config';
 
 // Type definitions for API responses
 interface BalanceResponse {
@@ -20,6 +21,7 @@ interface ApiErrorResponse {
 
 const WalletSearch = () => {
   const [walletAddress, setWalletAddress] = useState<string>('');
+  const [chainId, setChainId] = useState<string>('1'); // Default to Ethereum
   const [walletData, setWalletData] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +38,8 @@ const WalletSearch = () => {
     try {
       // use Promise.all for concurrent API calls
       const [balanceResponse, transactionsResponse] = await Promise.all([
-        fetch(`/api/wallet/balance?address=${walletAddress}`),
-        fetch(`/api/wallet/transactions?address=${walletAddress}`)
+        fetch(`/api/wallet/balance?address=${walletAddress}&chainid=${chainId}`),
+        fetch(`/api/wallet/transactions?address=${walletAddress}&chainid=${chainId}`)
       ]);
 
       if (!balanceResponse.ok || !transactionsResponse.ok) {
@@ -92,6 +94,18 @@ const WalletSearch = () => {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWalletAddress(e.target.value)}
           disabled={loading}
         />
+        <select 
+          className="select mr-1" 
+          value={chainId}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setChainId(e.target.value)}
+          disabled={loading}
+        >
+          {Object.entries(config.CHAINS).map(([id, chain]) => (
+            <option key={id} value={id}>
+              {chain.name}
+            </option>
+          ))}
+        </select>
         <button 
           className="btn btn-primary" 
           onClick={handleClick}
@@ -114,7 +128,7 @@ const WalletSearch = () => {
           {walletData.transactions && walletData.transactions.length > 0 && (
             <div>
               <h2>Transactions</h2>
-              <TransactionTable txs={walletData.transactions}/>
+              <TransactionTable txs={walletData.transactions} unit={walletData.unit}/>
             </div>
           )}
         </div>

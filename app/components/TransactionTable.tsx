@@ -3,9 +3,10 @@ import { Transaction } from '../types/Transaction';
 
 interface TransactionTableProps {
   txs: Transaction[];
+  unit: string
 }
 
-const TransactionTable: React.FC<TransactionTableProps> = ({ txs }) => {
+const TransactionTable: React.FC<TransactionTableProps> = ({ txs, unit }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -55,9 +56,9 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ txs }) => {
   };
 
   // Helper function to format value from wei to ETH
-  const formatValue = (value: string): string => {
-    const ethValue = parseFloat(value) / Math.pow(10, 18);
-    return ethValue.toFixed(6);
+  const formatValue = (value: number, precision = 8): string => {
+    const ethValue = value / Math.pow(10, 18);
+    return ethValue.toFixed(precision);
   };
 
   // Helper function to truncate hash/address for display
@@ -74,8 +75,8 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ txs }) => {
             <th>Hash</th>
             <th>From</th>
             <th>To</th>
-            <th>Value (ETH)</th>
-            <th>Gas Used</th>
+            <th>Value</th>
+            <th>Tx Fee</th>
             <th>Timestamp</th>
             <th>Status</th>
           </tr>
@@ -113,8 +114,8 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ txs }) => {
                   {truncateHash(tx.to)}
                 </a>
               </td>
-              <td>{formatValue(tx.value)}</td>
-              <td>{parseInt(tx.gasUsed).toLocaleString()}</td>
+              <td>{formatValue(parseInt(tx.value), 4)} {unit}</td>
+              <td>{formatValue(parseInt(tx.gasUsed) * parseInt(tx.gasPrice))}</td>
               <td>{formatTimestamp(tx.timeStamp)}</td>
               <td>
                 <span className={`badge ${tx.isError === '0' ? 'badge-success' : 'badge-error'}`}>
