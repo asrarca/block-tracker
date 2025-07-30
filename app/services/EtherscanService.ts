@@ -142,7 +142,7 @@ export class EtherscanService {
   /**
    * Get wallet transactions
    */
-  async getTransactions(address: string, chainId: string = '1', page = '1', offset = '0'): Promise<Transaction[]> {
+  async getTransactions(address: string, chainId: string = '1', page = '1', offset = '1000'): Promise<Transaction[]> {
     this.validateAddress(address);
 
     const url = this.buildUrl({
