@@ -16,10 +16,10 @@ interface BalanceResult {
 }
 
 interface PriceResult {
-  ethbtc: number;
-  ethbtc_timestamp: number;
-  ethusd: number;
-  ethusd_timestamp: number;
+  ethbtc: string;
+  ethbtc_timestamp: string;
+  ethusd: string;
+  ethusd_timestamp: string;
 }
 
 export class EtherscanService {
@@ -111,13 +111,8 @@ export class EtherscanService {
     if (data.status !== '1') {
       throw new Error(errorMessage);
     }
-    const out = {};
-    // ensure all values are numbers
-    Object.keys(data.result).forEach((key: string) => {
-      out[key] = parseFloat(data.result[key]);
-    });
 
-    return out as PriceResult;
+    return data.result as PriceResult;
   }
 
   /**
