@@ -9,9 +9,11 @@ Block Tracker is a blockchain wallet explorer application that allows users to s
 - **Transaction History**: Browse complete transaction history for any wallet address
 - **Chain Selection**: Easy dropdown selection to switch between different blockchain networks
 - **Live Data**: Real-time blockchain data fetched through the Etherscan API
-- **Responsive Interface**: Clean, user-friendly interface built with modern web technologies
+- **Search History**: Recent searches are saved in localStorage, offering better UX
+- **Responsive Interface**: Clean, user-friendly interface, including dark mode toggle
 
-Users simply enter a wallet address, select their desired blockchain network, and instantly view comprehensive wallet information including current balance and transaction history.
+
+Users simply enter a wallet address, select their desired blockchain network, and then hit the submit butotn to view wallet information including current balance and transaction history.
 
 ## Technology Stack
 
@@ -31,6 +33,7 @@ Users simply enter a wallet address, select their desired blockchain network, an
 - **Service Layer Pattern** - Separation of concerns for external API integration
 - **RESTful API Design** - Clean API structure for data fetching
 - **Type-Safe Development** - Full TypeScript implementation for reliability
+- **Security** - No hard-coded credentials. API keys are retrieved from secrets and added to environment variable during deploy.
 
 ## Getting Started
 
@@ -41,3 +44,9 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+Add your Etherscan API key to `.env.local` like this:
+
+```
+ETHERSCAN_API_KEY=YOUR_API_KEY_GOES_HERE
+```
