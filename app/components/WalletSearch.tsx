@@ -233,7 +233,7 @@ const WalletSearch: React.FC = () => {
           ))}
         </select>
         <button 
-          className="btn btn-primary" 
+          className="btn btn-primary rounded-md" 
           onClick={handleClick}
           disabled={loading || !walletAddress.trim()}
         >

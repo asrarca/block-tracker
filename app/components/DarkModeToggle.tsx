@@ -59,6 +59,7 @@ const DarkModeToggle: React.FC = () => {
         checked={isDark}
         onChange={toggleTheme}
         aria-label="Toggle dark mode"
+        title="Toggle Dark Mode"
       />
       <span className="text-sm mr-2">
         {isDark ? '🌙' : '🌞'}
