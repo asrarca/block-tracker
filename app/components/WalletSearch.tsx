@@ -24,10 +24,10 @@ interface SearchHistoryItem {
   timestamp: number;
 }
 interface PriceResult {
-  ethbtc: number;
-  ethbtc_timestamp: number;
-  ethusd: number;
-  ethusd_timestamp: number;
+  ethbtc: string;
+  ethbtc_timestamp: string;
+  ethusd: string;
+  ethusd_timestamp: string;
 }
 
 interface WalletSearchProps {
@@ -197,7 +197,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
   };
 
   const balanceInUsd = (balance_eth: string): string => {
-    const priceInUsd = parseFloat(balance_eth) * price.ethusd;
+    const priceInUsd = parseFloat(balance_eth) * parseFloat(price.ethusd);
     const formattedUsd = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
