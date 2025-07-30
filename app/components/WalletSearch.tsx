@@ -30,7 +30,11 @@ interface PriceResult {
   ethusd_timestamp: number;
 }
 
-const WalletSearch: React.FC = (price: PriceResult | object) => {
+interface WalletSearchProps {
+  price: PriceResult;
+}
+
+const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [chainId, setChainId] = useState<string>('1'); // Default to Ethereum
   const [walletData, setWalletData] = useState<WalletData | null>(null);
@@ -193,7 +197,7 @@ const WalletSearch: React.FC = (price: PriceResult | object) => {
   };
 
   const balanceInUsd = (balance_eth: string): string => {
-    const priceInUsd = parseFloat(balance_eth) * price.price.ethusd;
+    const priceInUsd = parseFloat(balance_eth) * price.ethusd;
     const formattedUsd = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
