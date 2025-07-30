@@ -6,13 +6,20 @@ import { Transaction } from '../types/Transaction';
 interface EtherscanBaseResponse {
   status: string;
   message: string;
-  result: string | Transaction[];
+  result: string | Transaction[] | PriceResult;
 }
 
 interface BalanceResult {
   address: string;
   balance: string;
   unit: string;
+}
+
+interface PriceResult {
+  ethbtc: number;
+  ethbtc_timestamp: number;
+  ethusd: number;
+  ethusd_timestamp: number;
 }
 
 export class EtherscanService {
@@ -67,7 +74,7 @@ export class EtherscanService {
    */
   private async fetchFromAPI(url: string): Promise<EtherscanBaseResponse> {
     const response = await fetch(url, {
-      next: { revalidate: 60 }, // Cache for 60 seconds
+      next: { revalidate: 120 }, // Cache for 120 seconds
     });
 
     if (!response.ok) {
@@ -95,6 +102,22 @@ export class EtherscanService {
       throw new Error(errorMessage);
     }
     return data.result as Transaction[];
+  }
+
+  /**
+   * Handle Etherscan API response for price (PriceResult object)
+   */
+  private handlePriceResponse(data: EtherscanBaseResponse, errorMessage: string): PriceResult {
+    if (data.status !== '1') {
+      throw new Error(errorMessage);
+    }
+    const out = {};
+    // ensure all values are numbers
+    Object.keys(data.result).forEach((key: string) => {
+      out[key] = parseFloat(data.result[key]);
+    });
+
+    return out as PriceResult;
   }
 
   /**
@@ -161,10 +184,21 @@ export class EtherscanService {
     return this.handleTransactionsResponse(data, 'Failed to fetch wallet transactions');
   }
 
+  async getEtherPrice() {
+    const url = this.buildUrl({
+      module: 'stats',
+      action: 'ethprice',
+    });
+
+    const data = await this.fetchFromAPI(url);
+
+    return this.handlePriceResponse(data, 'Failed to fetch Ethereum price');
+  };
+
   /**
    * Create a successful NextResponse with data
    */
-  createSuccessResponse(data: BalanceResult | Transaction[]): NextResponse {
+  createSuccessResponse(data: BalanceResult | Transaction[] | PriceResult): NextResponse {
     return NextResponse.json(data);
   }
 }

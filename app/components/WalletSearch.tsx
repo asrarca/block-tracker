@@ -23,8 +23,14 @@ interface SearchHistoryItem {
   address: string;
   timestamp: number;
 }
+interface PriceResult {
+  ethbtc: number;
+  ethbtc_timestamp: number;
+  ethusd: number;
+  ethusd_timestamp: number;
+}
 
-const WalletSearch: React.FC = () => {
+const WalletSearch: React.FC = (price: PriceResult | object) => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [chainId, setChainId] = useState<string>('1'); // Default to Ethereum
   const [walletData, setWalletData] = useState<WalletData | null>(null);
@@ -186,6 +192,14 @@ const WalletSearch: React.FC = () => {
     fetchData();
   };
 
+  const balanceInUsd = (balance_eth: string): string => {
+    const priceInUsd = parseFloat(balance_eth) * price.price.ethusd;
+    const formattedUsd = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(priceInUsd);
+    return formattedUsd;
+  };
 
   return (
     <div>
@@ -250,7 +264,7 @@ const WalletSearch: React.FC = () => {
       {walletData && (
         <div>
           <p className="ml-3 text-md font-bold font-mono border-b-1 pb-3">{walletData.address}</p>
-          <p className="ml-3 mt-3 text-xl">Balance: {walletData.balance} {walletData.unit}</p>
+          <p className="ml-3 mt-3 text-xl">Balance: {walletData.balance} {walletData.unit} ({balanceInUsd(walletData.balance)})</p>
           {walletData.transactions && walletData.transactions.length > 0 && (
             <div>
               <h2 className="ml-3 text-xl mt-3">Transactions</h2>
