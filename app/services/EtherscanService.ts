@@ -49,6 +49,10 @@ export class EtherscanService {
    * Build Etherscan API URL with parameters
    */
   private buildUrl(params: Record<string, string>, chainId: string = '1'): string {
+    if (!this.apiKey) {
+      throw new Error('Etherscan API key is not configured');
+    }
+
     const urlParams = new URLSearchParams({
       chainid: chainId,
       apikey: this.apiKey,
