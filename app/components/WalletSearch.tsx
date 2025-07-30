@@ -24,7 +24,7 @@ interface SearchHistoryItem {
   timestamp: number;
 }
 
-const WalletSearch = () => {
+const WalletSearch: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [chainId, setChainId] = useState<string>('1'); // Default to Ethereum
   const [walletData, setWalletData] = useState<WalletData | null>(null);
@@ -145,8 +145,6 @@ const WalletSearch = () => {
       ]);
 
       if (!balanceResponse.ok || !transactionsResponse.ok) {
-        console.log({balanceResponse});
-        console.log({transactionsResponse});
         throw new Error('Failed to fetch wallet data');
       }
 
@@ -170,7 +168,6 @@ const WalletSearch = () => {
       };
 
       setWalletData(combinedData);
-      console.log(combinedData);
 
       // Save successful search to history
       saveSearchToHistory(walletAddress);
