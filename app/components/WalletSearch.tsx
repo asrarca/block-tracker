@@ -1,7 +1,9 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react'
 import TransactionTable from './TransactionTable';
+import TokensTable from './TokensTable';
 import { Transaction } from '../types/Transaction';
+import { TokenBalance } from '../types/TokenBalance';
 import config from '../config';
 
 // Type definitions for API responses
@@ -13,6 +15,7 @@ interface BalanceResponse {
 
 interface WalletData extends BalanceResponse {
   transactions: Transaction[];
+  tokens: TokenBalance[];
 }
 
 interface ApiErrorResponse {
@@ -33,6 +36,7 @@ interface PriceResult {
 interface WalletSearchProps {
   price: PriceResult;
 }
+
 
 const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
   const [walletAddress, setWalletAddress] = useState<string>('');
@@ -149,9 +153,10 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
 
     try {
       // use Promise.all for concurrent API calls
-      const [balanceResponse, transactionsResponse] = await Promise.all([
+      const [balanceResponse, transactionsResponse, tokensResponse] = await Promise.all([
         fetch(`/api/wallet/balance?address=${walletAddress}&chainid=${chainId}`),
-        fetch(`/api/wallet/transactions?address=${walletAddress}&chainid=${chainId}`)
+        fetch(`/api/wallet/transactions?address=${walletAddress}&chainid=${chainId}`),
+        fetch(`/api/wallet/tokens?address=${walletAddress}`),
       ]);
 
       if (!balanceResponse.ok || !transactionsResponse.ok) {
@@ -159,9 +164,10 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
       }
 
       // parse responses concurrently
-      const [balanceData, transactionsData] = await Promise.all([
+      const [balanceData, transactionsData, tokensData] = await Promise.all([
         balanceResponse.json() as Promise<BalanceResponse | ApiErrorResponse>,
-        transactionsResponse.json() as Promise<Transaction[] | ApiErrorResponse>
+        transactionsResponse.json() as Promise<Transaction[] | ApiErrorResponse>,
+        tokensResponse.json() as Promise<TokenBalance[] | ApiErrorResponse>
       ]);
 
       if ('error' in balanceData) {
@@ -174,6 +180,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
       // all good
       const combinedData: WalletData = {
         ...balanceData,
+        tokens: tokensData as TokenBalance[],
         transactions: transactionsData as Transaction[]
       };
 
@@ -258,7 +265,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
           {loading ? 'Loading...' : 'Go'}
         </button>
       </div>
-      
+
       {error && (
         <div className="alert alert-error mb-4">
           <p>{error}</p>
@@ -267,14 +274,31 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
       
       {walletData && (
         <div>
-          <p className="ml-3 text-md font-bold font-mono border-b-1 pb-3">{walletData.address}</p>
-          <p className="ml-3 mt-3 text-xl">Balance: {walletData.balance} {walletData.unit} ({balanceInUsd(walletData.balance)})</p>
-          {walletData.transactions && walletData.transactions.length > 0 && (
-            <div>
-              <h2 className="ml-3 text-xl mt-3">Transactions</h2>
-              <TransactionTable txs={walletData.transactions} unit={walletData.unit}/>
+          <p className="ml-3 text-md font-bold font-mono pb-3">{walletData.address}</p>
+          <hr className="border-gray-400" />
+          <div role="tablist" className="tabs tabs-border">
+            <input type="radio" name="my_tabs_2" className="tab" aria-label="Balance" defaultChecked={true} />
+            <div className="tab-content border-base-300 bg-base-100 p-10">
+              <div className="mt-3 text-xl">
+                <p>{walletData.balance} {walletData.unit}</p>
+                <p>{balanceInUsd(walletData.balance)}</p>
+              </div>
             </div>
-          )}
+
+            <input type="radio" name="my_tabs_2" className="tab" aria-label={`Transactions (${walletData.transactions.length})`} />
+            <div className="tab-content border-base-300 bg-base-100 p-10">
+              {walletData.transactions && walletData.transactions.length > 0 && (
+                <TransactionTable txs={walletData.transactions} unit={walletData.unit}/>
+              )}
+            </div>
+
+            <input type="radio" name="my_tabs_2" className="tab" aria-label={`Tokens (${walletData.tokens.length})`} />
+            <div className="tab-content border-base-300 bg-base-100 p-10">
+              {walletData.tokens && walletData.tokens.length > 0 && (
+                <TokensTable tokens={walletData.tokens}/>
+              )}
+            </div>
+          </div>
         </div>
       )}      
 
