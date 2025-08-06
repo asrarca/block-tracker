@@ -53,12 +53,13 @@ export class AlchemyService {
   private async fetchFromAPI(options: RequestInit): Promise<AlchemyBaseResponse> {
     const url = config.ALCHEMY_API_URL;
     options.next = {
-      revalidate: 10
+      revalidate: 300
     };
 
     const response = await fetch(url, options);
 
     if (!response.ok) {
+      console.log(response);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -115,8 +116,6 @@ export class AlchemyService {
     try {
       // Fetch all pages of token balances
       do {
-        console.log(`Fetching token balances page ${pageCount + 1}${currentPageKey ? ` with pageKey: ${currentPageKey}` : ''}`);
-        console.log("\n\nhey there\n\n");
 
         const pageResult = await this.fetchTokenBalancePage(address, currentPageKey);
 
