@@ -1,7 +1,14 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, ReactElement } from 'react'
 import { TokenBalance } from '../types/TokenBalance';
+import { TokenMetaData } from '@/app/types/TokenMetaData';
+import Image from 'next/image';
 
-const TokensTable: React.FC<TokenBalance[]> = ({ tokens }) => {
+interface TokensTableProps {
+  tokens: TokenBalance;
+  tokensCache: Map<string, TokenMetaData>;
+}
+
+const TokensTable: React.FC<TokensTableProps[]> = ({ tokens, tokensCache }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -44,42 +51,63 @@ const TokensTable: React.FC<TokenBalance[]> = ({ tokens }) => {
   const goToNext = () => goToPage(currentPage + 1);
   const goToLast = () => goToPage(totalPages);
 
-  // Helper function to format timestamp
-  const formatTimestamp = (timestamp: string): string => {
-    const date = new Date(parseInt(timestamp) * 1000);
-    return date.toLocaleString();
-  };
-
   // Helper function to format value from wei to ETH
-  const formatValue = (value: number, precision = 8): string => {
-    const ethValue = value / Math.pow(10, 18);
+  const formatValue = (value: number, decimals: number, precision = 8): string => {
+    const ethValue = value / Math.pow(10, decimals);
     return ethValue.toFixed(precision);
   };
 
-  // Helper function to truncate hash/address for display
-  const truncateHash = (hash: string, length: number = 10): string => {
-    if (hash.length <= length) return hash;
-    return `${hash.slice(0, length)}...${hash.slice(-4)}`;
-  };
+  const getTokenData = (address: string): TokenMetaData => {
+    const t = tokensCache.get(address);
+    if  (t) {
+      return t;
+    }
+    return {
+      chainId: 1,
+      address,
+      logoURI: 'placeholder-100.svg',
+      name: 'Unkown Token',
+      symbol: '',
+      decimals: '18'
+    } as TokenMetaData;
+  }
+
+  const getTokenRow = (token: TokenBalance, index: number): ReactElement<HTMLTableRowElement> => {
+    const t = getTokenData(token.contractAddress);
+    return (
+      <tr key={token.contractAddress + index}>
+        <td>
+          <div className="h-[50px] w-[50px] relative">
+            <Image src={t.logoURI} alt={t.name} className="w-full h-full rounded-full object-cover" width="50" height="50" />
+          </div>
+        </td>
+        <td>
+          <div>
+            <div className="font-medium text-base">{t.name}</div>
+            <div className="text-sm text-gray-500">{token.contractAddress}</div>
+          </div>
+        </td>
+        <td>
+          <div className="text-right">
+          {formatValue(parseFloat(token.tokenBalanceDecimal), parseInt(t.decimals))}
+          </div>
+        </td>
+      </tr>
+    )
+  }
 
   return (
     <div className="overflow-x-auto">
       <table className="table table-zebra w-full">
         <thead>
           <tr>
-            <th>contractAddress</th>
-            <th>balanceDecimal</th>
+            <th></th>
+            <th>Token</th>
+            <th className="text-right">Balance</th>
           </tr>
         </thead>
         <tbody>
-          {currentTokens.map((token, index) => (
-            <tr key={token.contractAddress + index}>
-              <td>
-                  {token.contractAddress}
-              </td>
-              <td>{token.tokenBalanceDecimal}</td>
-            </tr>
-          ))}
+          {currentTokens.map((token, index) => getTokenRow(token, index))}
         </tbody>
       </table>
 

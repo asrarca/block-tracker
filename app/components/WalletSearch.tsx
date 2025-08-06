@@ -5,6 +5,7 @@ import TokensTable from './TokensTable';
 import { Transaction } from '../types/Transaction';
 import { TokenBalance } from '../types/TokenBalance';
 import config from '../config';
+import { TokenMetaData } from '@/app/types/TokenMetaData';
 
 // Type definitions for API responses
 interface BalanceResponse {
@@ -35,10 +36,11 @@ interface PriceResult {
 
 interface WalletSearchProps {
   price: PriceResult;
+  tokensCache: Map<string, TokenMetaData>;
 }
 
 
-const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
+const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [chainId, setChainId] = useState<string>('1'); // Default to Ethereum
   const [walletData, setWalletData] = useState<WalletData | null>(null);
@@ -295,7 +297,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
             <input type="radio" name="my_tabs_2" className="tab" aria-label={`Tokens (${walletData.tokens.length})`} />
             <div className="tab-content border-base-300 bg-base-100 p-10">
               {walletData.tokens && walletData.tokens.length > 0 && (
-                <TokensTable tokens={walletData.tokens}/>
+                <TokensTable tokens={walletData.tokens} tokensCache={tokensCache}/>
               )}
             </div>
           </div>
