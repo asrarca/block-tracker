@@ -232,7 +232,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
             <div className="absolute top-full left-0 right-0 border border-base-400 rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
               {searchHistory.slice(0, 5).map((item, index) => (
                 <div
-                  key={`${item.address}-${item.timestamp}`}
+                  key={`${item.address}-${item.timestamp}-${index}`}
                   className="flex justify-between items-center px-3 py-2 bg-base-100 hover:bg-base-300 cursor-pointer border-b border-base-300 last:border-b-0"
                   onClick={() => selectHistoryItem(item.address)}
                 >
