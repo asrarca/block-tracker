@@ -13,7 +13,7 @@ export class TokenDataService {
 
   async getAllTokens(): Promise<Map<string, TokenMetaData>> {
 
-	  const cacheDir = path.join(process.cwd(), 'app/data/token-cache');
+    const cacheDir = path.join(process.cwd(), 'app/data/token-cache');
     const files = await fs.promises.readdir(cacheDir);
 
     const allTokens: Map<string, TokenMetaData> = new Map();
