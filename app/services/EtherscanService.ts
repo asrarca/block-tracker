@@ -99,7 +99,7 @@ export class EtherscanService {
    */
   private handleTransactionsResponse(data: EtherscanBaseResponse, errorMessage: string): Transaction[] {
     if (data.status !== '1') {
-      throw new Error(errorMessage);
+      console.error(errorMessage);
     }
     return data.result as Transaction[];
   }

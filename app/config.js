@@ -1,6 +1,8 @@
 const config = {
   ETHERSCAN_API_KEY: process.env.ETHERSCAN_API_KEY,
   ETHERSCAN_API_URL: 'https://api.etherscan.io/v2/api',
+  ALCHEMY_API_KEY: process.env.ALCHEMY_API_KEY,
+  ALCHEMY_API_URL: 'https://eth-mainnet.g.alchemy.com/v2/' + process.env.ALCHEMY_API_KEY,
   CHAINS: {
     1: {
       name: 'Ethereum',

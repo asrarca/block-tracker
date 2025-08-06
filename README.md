@@ -34,6 +34,7 @@ Users simply enter a wallet address, select their desired blockchain network, an
 - **RESTful API Design** - Clean API structure for data fetching
 - **Type-Safe Development** - Full TypeScript implementation for reliability
 - **Security** - No hard-coded credentials. API keys are retrieved from secrets and added to environment variable during deploy.
+- **Performance** - Cache API fetches for 2 minutes for better performance
 
 ## Getting Started
 
