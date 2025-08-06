@@ -218,7 +218,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
     <div>
       <div className="my-5">
         <div className="relative inline-block" ref={dropdownRef}>
-          <input 
+          <input
             type="text"
             placeholder="Enter wallet address"
             className="input mr-1 w-96 font-mono"
@@ -247,8 +247,8 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
             </div>
           )}
         </div>
-        <select 
-          className="select mr-1" 
+        <select
+          className="select mr-1"
           value={chainId}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setChainId(e.target.value)}
           disabled={loading}
@@ -259,8 +259,8 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
             </option>
           ))}
         </select>
-        <button 
-          className="btn btn-primary rounded-md" 
+        <button
+          className="btn btn-primary rounded-md"
           onClick={handleClick}
           disabled={loading || !walletAddress.trim()}
         >
@@ -273,7 +273,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
           <p>{error}</p>
         </div>
       )}
-      
+
       {walletData && (
         <div>
           <p className="ml-3 text-md font-bold font-mono pb-3">{walletData.address}</p>
@@ -297,12 +297,12 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
             <input type="radio" name="my_tabs_2" className="tab" aria-label={`Tokens (${walletData.tokens.length})`} />
             <div className="tab-content border-base-300 bg-base-100 p-10">
               {walletData.tokens && walletData.tokens.length > 0 && (
-                <TokensTable tokens={walletData.tokens} tokensCache={tokensCache}/>
+                <TokensTable tokenBalances={walletData.tokens} tokensCache={tokensCache}/>
               )}
             </div>
           </div>
         </div>
-      )}      
+      )}
 
     </div>
   )

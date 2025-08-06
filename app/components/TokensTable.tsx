@@ -4,19 +4,19 @@ import { TokenMetaData } from '@/app/types/TokenMetaData';
 import Image from 'next/image';
 
 interface TokensTableProps {
-  tokens: TokenBalance;
+  tokenBalances: TokenBalance[];
   tokensCache: Map<string, TokenMetaData>;
 }
 
-const TokensTable: React.FC<TokensTableProps[]> = ({ tokens, tokensCache }) => {
+const TokensTable: React.FC<TokensTableProps> = ({ tokenBalances, tokensCache }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
   // Calculate pagination values
-  const totalPages = Math.ceil(tokens.length / pageSize);
+  const totalPages = Math.ceil(tokenBalances.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentTokens = tokens.slice(startIndex, endIndex);
+  const currentTokens = tokenBalances.slice(startIndex, endIndex);
 
   // Calculate which page numbers to show (5 pages centered around current page)
   const getPageNumbers = useMemo(() => {
@@ -139,8 +139,8 @@ const TokensTable: React.FC<TokensTableProps[]> = ({ tokens, tokensCache }) => {
               onClick={() => goToPage(pageNum)}
               disabled={pageNum === currentPage}
               className={`btn btn-sm ${
-                pageNum === currentPage 
-                  ? 'btn-primary font-bold cursor-default' 
+                pageNum === currentPage
+                  ? 'btn-primary font-bold cursor-default'
                   : 'btn-outline'
               }`}
             >
@@ -171,7 +171,7 @@ const TokensTable: React.FC<TokensTableProps[]> = ({ tokens, tokensCache }) => {
       {/* Page Info */}
       {totalPages > 1 && (
         <div className="text-center mt-2 text-sm text-gray-600">
-          Showing {startIndex + 1}-{Math.min(endIndex, tokens.length)} of {tokens.length} transactions
+          Showing {startIndex + 1}-{Math.min(endIndex, tokenBalances.length)} of {tokenBalances.length} transactions
         </div>
       )}
     </div>
