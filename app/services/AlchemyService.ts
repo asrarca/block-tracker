@@ -59,7 +59,9 @@ export class AlchemyService {
     const response = await fetch(url, options);
 
     if (!response.ok) {
-      console.log(response);
+      if (response.status == 401) {
+        console.log('Unauthorized: Alchemy API key might be missing from this environment.');
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -78,8 +80,6 @@ export class AlchemyService {
       options.pageKey = pageKey;
     }
     params.push(options);
-    console.log('params');
-    console.log(params);
 
     const requestOptions:RequestInit = {
       method: 'POST',
@@ -135,7 +135,7 @@ export class AlchemyService {
 
         console.log(`Page ${pageCount} fetched: ${tokenBalancesWithDecimal.length} tokens`);
 
-      } while (currentPageKey);
+      } while (currentPageKey && pageCount < 10);
 
       // Filter out tokens with zero balances
       const nonZeroBalances = allTokenBalances.filter(token =>
