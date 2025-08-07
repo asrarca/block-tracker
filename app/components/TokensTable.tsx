@@ -9,13 +9,7 @@ interface TokensTableProps {
 
 const TokensTable: React.FC<TokensTableProps> = ({ tokens }) => {
 
-  // Helper function to format value from wei to ETH
-  const formatValue = (value: number, decimals: number): number => {
-    const ethValue = value / Math.pow(10, decimals);
-    return ethValue;
-  };
-
-  const formatValueUsd = (balance: number, price: number|string): string => {
+  const formatValueUsd = (balance: number, price: number|string, decimalsDefault: number|null = null): string => {
     if (typeof price == 'string') {
       price = parseFloat(price);
     }
@@ -24,16 +18,20 @@ const TokensTable: React.FC<TokensTableProps> = ({ tokens }) => {
 
     // Determine sensible decimal places based on value
     let decimals;
-    if (usdValue >= 100) {
-      decimals = 2;
-    } else if (usdValue >= 1) {
-      decimals = 4;
-    } else if (usdValue >= 0.01) {
-      decimals = 6;
-    } else if (usdValue >= 0.0001) {
-      decimals = 8;
+    if (decimalsDefault) {
+      decimals = decimalsDefault;
     } else {
-      decimals = 12;
+      if (usdValue >= 100) {
+        decimals = 2;
+      } else if (usdValue >= 1) {
+        decimals = 4;
+      } else if (usdValue >= 0.01) {
+        decimals = 6;
+      } else if (usdValue >= 0.0001) {
+        decimals = 8;
+      } else {
+        decimals = 12;
+      }
     }
 
     return usdValue.toFixed(decimals);
@@ -41,7 +39,6 @@ const TokensTable: React.FC<TokensTableProps> = ({ tokens }) => {
 
   const getTokenRow = (token: TokenFormatted, index: number): ReactElement<HTMLTableRowElement> => {
     const imageUrl = token.metadata.logo ||  '/placeholder-100.svg';
-    const tokenBalance = formatValue(parseFloat(token.balance), parseInt(token.metadata.decimals));
     const tokenPrice = token.price.value;
     return (
       <tr key={index}>
@@ -63,12 +60,12 @@ const TokensTable: React.FC<TokensTableProps> = ({ tokens }) => {
         </td>
         <td>
           <div className="text-right">
-            {tokenBalance.toFixed(4)} {token.metadata.symbol}
+            {token.balance.toFixed(4)} {token.metadata.symbol}
           </div>
         </td>
         <td>
           <div className="text-right">
-           $ {formatValueUsd(tokenBalance, tokenPrice)}
+           $ {formatValueUsd(token.balance, tokenPrice, 2)}
           </div>
         </td>
       </tr>
