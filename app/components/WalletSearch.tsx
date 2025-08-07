@@ -3,20 +3,13 @@ import React, { useState, useEffect, useRef } from 'react'
 import TransactionTable from './TransactionTable';
 import TokensTable from './TokensTable';
 import { Transaction } from '../types/Transaction';
-import { TokenBalance } from '../types/TokenBalance';
 import config from '../config';
-import { TokenMetaData } from '@/app/types/TokenMetaData';
+import { BalanceResult, PriceResult } from '@/app/services/EtherscanService';
+import { TokenFormatted } from '@/app/services/AlchemyService';
 
-// Type definitions for API responses
-interface BalanceResponse {
-  address: string;
-  balance: string;
-  unit: string;
-}
-
-interface WalletData extends BalanceResponse {
+interface WalletData extends BalanceResult {
   transactions: Transaction[];
-  tokens: TokenBalance[];
+  tokens: TokenFormatted[];
 }
 
 interface ApiErrorResponse {
@@ -27,20 +20,13 @@ interface SearchHistoryItem {
   address: string;
   timestamp: number;
 }
-interface PriceResult {
-  ethbtc: string;
-  ethbtc_timestamp: string;
-  ethusd: string;
-  ethusd_timestamp: string;
-}
 
 interface WalletSearchProps {
   price: PriceResult;
-  tokensCache: Map<string, TokenMetaData>;
 }
 
 
-const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
+const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [chainId, setChainId] = useState<string>('1'); // Default to Ethereum
   const [walletData, setWalletData] = useState<WalletData | null>(null);
@@ -167,9 +153,9 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
 
       // parse responses concurrently
       const [balanceData, transactionsData, tokensData] = await Promise.all([
-        balanceResponse.json() as Promise<BalanceResponse | ApiErrorResponse>,
+        balanceResponse.json() as Promise<BalanceResult | ApiErrorResponse>,
         transactionsResponse.json() as Promise<Transaction[] | ApiErrorResponse>,
-        tokensResponse.json() as Promise<TokenBalance[] | ApiErrorResponse>
+        tokensResponse.json() as Promise<TokenFormatted[] | ApiErrorResponse>
       ]);
 
       if ('error' in balanceData) {
@@ -182,7 +168,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
       // all good
       const combinedData: WalletData = {
         ...balanceData,
-        tokens: tokensData as TokenBalance[],
+        tokens: tokensData as TokenFormatted[],
         transactions: transactionsData as Transaction[]
       };
 
@@ -297,7 +283,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
             <input type="radio" name="my_tabs_2" className="tab" aria-label={`Tokens (${walletData.tokens.length})`} />
             <div className="tab-content border-base-300 bg-base-100 p-10">
               {walletData.tokens && walletData.tokens.length > 0 && (
-                <TokensTable tokenBalances={walletData.tokens} tokensCache={tokensCache}/>
+                <TokensTable tokens={walletData.tokens}/>
               )}
             </div>
           </div>

@@ -9,13 +9,13 @@ interface EtherscanBaseResponse {
   result: string | Transaction[] | PriceResult;
 }
 
-interface BalanceResult {
+export interface BalanceResult {
   address: string;
   balance: string;
   unit: string;
 }
 
-interface PriceResult {
+export interface PriceResult {
   ethbtc: string;
   ethbtc_timestamp: string;
   ethusd: string;
@@ -65,7 +65,7 @@ export class EtherscanService {
       apikey: this.apiKey,
       ...params
     });
-    
+
     return `${this.baseUrl}?${urlParams.toString()}`;
   }
 
@@ -120,10 +120,10 @@ export class EtherscanService {
    */
   handleError(error: unknown): NextResponse {
     console.error('EtherscanService error:', error);
-    
+
     const errorMessage = error instanceof Error ? error.message : 'Server error';
     const statusCode = errorMessage === 'Missing wallet address' ? 400 : 500;
-    
+
     return NextResponse.json({ error: errorMessage }, { status: statusCode });
   }
 
@@ -175,7 +175,7 @@ export class EtherscanService {
     }, chainId);
 
     const data = await this.fetchFromAPI(url);
-    
+
     return this.handleTransactionsResponse(data, 'Failed to fetch wallet transactions');
   }
 
