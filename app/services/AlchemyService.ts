@@ -18,7 +18,7 @@ interface TokensByWallet {
 
 export interface TokenFormatted {
   address: string | null;
-  balance: string;
+  balance: number;
   metadata: TokenMetaData;
   price: TokenPrice;
   value: number;
@@ -96,6 +96,18 @@ export class AlchemyService {
       return '0';
     }
   }
+
+  // Helper function to format value from wei to ETH
+  private formatValue(value: number|string, decimals: number|string): number {
+    if (typeof value == 'string') {
+      value = parseFloat(value);
+    }
+    if (typeof decimals == 'string') {
+      decimals = parseInt(decimals);
+    }
+    const ethValue = value / Math.pow(10, decimals);
+    return ethValue;
+  };
 
   /**
   * Make request to Alchemy API (V1)
@@ -188,7 +200,8 @@ export class AlchemyService {
 
         // Convert hex balances to decimal and add to each token balance object
         const tokenBalances = pageResult.tokens.map(token => {
-          const balance = this.convertHexToDecimal(token.tokenBalance);
+          const balanceDecimal = this.convertHexToDecimal(token.tokenBalance);
+          const balance = this.formatValue(balanceDecimal, token.tokenMetadata.decimals);
           const price = token.tokenPrices.length ? token.tokenPrices[0] : {
               currency: 'usd',
               value: '0',
@@ -200,7 +213,7 @@ export class AlchemyService {
             balance,
             metadata: token.tokenMetadata,
             price,
-            value: parseFloat(price.value) * parseFloat(balance)
+            value: parseFloat(price.value) * balance
           }
         });
 
@@ -217,7 +230,7 @@ export class AlchemyService {
 
       // Filter out tokens with zero balances or insignificant value
       const nonZeroBalances = allTokenBalances.filter(token =>
-        token.balance !== '0' &&
+        token.balance !== 0 &&
         token.price.value !== '0' &&
         token.value > 0.01
       ).sort((a, b) => b.value - a.value);
