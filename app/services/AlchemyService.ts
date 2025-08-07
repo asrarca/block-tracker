@@ -1,16 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import config from '../config';
-import { TokenBalance } from '../types/TokenBalance';
 
-interface AlchemyBaseResponse {
-  jsonrpc: string;
-  id: string;
-  result: {
-    address: string;
-    tokenBalances: TokenBalance[];
-    pageKey?: string;
-  } | string | TokenMetaData;
+export interface TokenPrice {
+  currency: string;
+  value: string;
+  lastUpdatedAt: string;
+};
+
+interface TokensByWallet {
+  address: string;
+  network: string;
+  tokenAddress: string | null;
+  tokenBalance: string;
+  tokenMetadata: TokenMetaData;
+  tokenPrices: TokenPrice[]
 }
+
+export interface TokenFormatted {
+  address: string | null;
+  balance: string;
+  metadata: TokenMetaData;
+  price: TokenPrice;
+  value: number;
+}
+
 
 interface TokenMetaData {
   name: string;
@@ -18,6 +31,22 @@ interface TokenMetaData {
   decimals: string;
   logo: string;
 };
+
+interface BaseData {
+  pageKey?: string;
+}
+
+interface APIResponse {
+  data: BaseData;
+}
+
+interface TokensByWalletData extends BaseData {
+  tokens: TokensByWallet[];
+}
+interface APIResponse_TokensByWallet extends APIResponse {
+  data: TokensByWalletData;
+}
+
 
 export class AlchemyService {
   /**
@@ -48,10 +77,10 @@ export class AlchemyService {
   }
 
   /**
-  * Make request to Alchemy API
+  * Make request to Alchemy API (V1)
   */
-  private async fetchFromAPI(options: RequestInit): Promise<AlchemyBaseResponse> {
-    const url = config.ALCHEMY_API_URL;
+  private async fetchFromAPI(path: string, options: RequestInit): Promise<APIResponse_TokensByWallet> {
+    const url = config.ALCHEMY_API_URL_V1 + path;
     options.next = {
       revalidate: 300
     };
@@ -68,48 +97,59 @@ export class AlchemyService {
     return await response.json();
   }
 
+
+
   /**
   * Fetch a single page of token balances from Alchemy API
   */
-  private async fetchTokenBalancePage(address: string, pageKey?: string): Promise<{ tokenBalances: TokenBalance[], pageKey?: string }> {
-    const params: (string | { maxCount: number; pageKey?: string })[] = [address, "erc20"];
+  private async fetchTokenBalancePage(address: string, pageKey?: string) {
+    interface RequestBody {
+      addresses: Array<{address: string, networks: ['eth-mainnet']}>;
+      withMetadata: boolean;
+      withPrices: boolean;
+      includeNativeTokens: boolean;
+      pageKey?: string
+    };
 
-    // Add options object with maxCount and optional pageKey
-    const options: { maxCount: number; pageKey?: string } = { maxCount: 100 };
+    const requestBody:RequestBody = {
+      addresses: [{
+        address,
+        networks: [
+          "eth-mainnet"
+        ]
+      }],
+      withMetadata: true,
+      withPrices: true,
+      includeNativeTokens: false,
+    };
+
     if (pageKey) {
-      options.pageKey = pageKey;
+      requestBody.pageKey = pageKey;
     }
-    params.push(options);
-
     const requestOptions:RequestInit = {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "alchemy_getTokenBalances",
-        params: params,
-        id: 1
-      })
+      body: JSON.stringify(requestBody)
     };
 
-    const data = await this.fetchFromAPI(requestOptions);
+    const data = await this.fetchFromAPI('/assets/tokens/by-address', requestOptions);
 
-    if (typeof data.result === 'object' && data.result !== null && 'tokenBalances' in data.result) {
+    if (typeof data.data === 'object' && 'tokens' in data.data) {
       return {
-        tokenBalances: data.result.tokenBalances,
-        pageKey: data.result.pageKey
+        tokens: data.data.tokens,
+        pageKey: data.data.pageKey
       };
     }
 
     throw new Error('Unexpected API response format');
   }
 
-  async getTokenBalance(address: string): Promise<TokenBalance[]> {
+  async getTokenBalance(address: string): Promise<TokenFormatted[]> {
     if (!address) {
       throw new Error('Missing wallet address');
     }
 
-    const allTokenBalances: TokenBalance[] = [];
+    const allTokenBalances: TokenFormatted[] = [];
     let currentPageKey: string | undefined = undefined;
     let pageCount = 0;
 
@@ -120,30 +160,40 @@ export class AlchemyService {
         const pageResult = await this.fetchTokenBalancePage(address, currentPageKey);
 
         // Convert hex balances to decimal and add to each token balance object
-        const tokenBalancesWithDecimal = pageResult.tokenBalances.map(token => ({
-          contractAddress: token.contractAddress,
-          tokenBalance: token.tokenBalance,
-          tokenBalanceDecimal: this.convertHexToDecimal(token.tokenBalance)
-        }));
+        const tokenBalances = pageResult.tokens.map(token => {
+          const balance = this.convertHexToDecimal(token.tokenBalance);
+          const price = token.tokenPrices.length ? token.tokenPrices[0] : {
+              currency: 'usd',
+              value: '0',
+              lastUpdatedAt: ''
+            } as TokenPrice;
+
+          return {
+            address: token.tokenAddress,
+            balance,
+            metadata: token.tokenMetadata,
+            price,
+            value: parseFloat(price.value) * parseFloat(balance)
+          }
+        });
 
         // Add to our collection
-        allTokenBalances.push(...tokenBalancesWithDecimal);
+        allTokenBalances.push(...tokenBalances);
 
         // Update pageKey for next iteration
         currentPageKey = pageResult.pageKey;
         pageCount++;
 
-        console.log(`Page ${pageCount} fetched: ${tokenBalancesWithDecimal.length} tokens`);
+        console.log(`Page ${pageCount} fetched: ${tokenBalances.length} tokens`);
 
       } while (currentPageKey && pageCount < 10);
 
-      // Filter out tokens with zero balances
+      // Filter out tokens with zero balances or insignificant value
       const nonZeroBalances = allTokenBalances.filter(token =>
-        token.tokenBalanceDecimal !== '0' &&
-        token.tokenBalance !== '0x0' &&
-        token.tokenBalance !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
-        token.tokenBalance !== '0x'
-      );
+        token.balance !== '0' &&
+        token.price.value !== '0' &&
+        token.value > 0.01
+      ).sort((a, b) => b.value - a.value);
 
       // console.log(`Total pages fetched: ${pageCount}`);
       // console.log(`Total tokens found: ${allTokenBalances.length}`);
@@ -160,7 +210,7 @@ export class AlchemyService {
   /**
   * Create a successful NextResponse with data
   */
-  createSuccessResponse(data: TokenBalance[] | TokenMetaData): NextResponse {
+  createSuccessResponse(data: TokenFormatted[]): NextResponse {
     return NextResponse.json(data);
   }
 

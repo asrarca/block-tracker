@@ -1,59 +1,78 @@
 import React, { ReactElement } from 'react'
-import { TokenBalance } from '../types/TokenBalance';
-import { TokenMetaData } from '@/app/types/TokenMetaData';
+import { TokenFormatted } from '../services/AlchemyService';
 import Image from 'next/image';
 import PaginatedTable from './PaginatedTable';
 
 interface TokensTableProps {
-  tokenBalances: TokenBalance[];
-  tokensCache: Map<string, TokenMetaData>;
+  tokens: TokenFormatted[];
 }
 
-const TokensTable: React.FC<TokensTableProps> = ({ tokenBalances, tokensCache }) => {
+const TokensTable: React.FC<TokensTableProps> = ({ tokens }) => {
 
   // Helper function to format value from wei to ETH
-  const formatValue = (value: number, decimals: number, precision = 8): string => {
+  const formatValue = (value: number, decimals: number): number => {
     const ethValue = value / Math.pow(10, decimals);
-    return ethValue.toFixed(precision);
+    return ethValue;
   };
 
-  const getTokenData = (address: string): TokenMetaData => {
-    const t = tokensCache.get(address);
-    if  (t) {
-      return t;
+  const formatValueUsd = (balance: number, price: number|string): string => {
+    if (typeof price == 'string') {
+      price = parseFloat(price);
     }
-    return {
-      chainId: 1,
-      address,
-      logoURI: 'placeholder-100.svg',
-      name: 'Unkown Token',
-      symbol: '',
-      decimals: '18'
-    } as TokenMetaData;
+    // Calculate the total USD value
+    const usdValue = balance * price;
+
+    // Determine sensible decimal places based on value
+    let decimals;
+    if (usdValue >= 100) {
+      decimals = 2;
+    } else if (usdValue >= 1) {
+      decimals = 4;
+    } else if (usdValue >= 0.01) {
+      decimals = 6;
+    } else if (usdValue >= 0.0001) {
+      decimals = 8;
+    } else {
+      decimals = 12;
+    }
+
+    return usdValue.toFixed(decimals);
   }
 
-  const getTokenRow = (token: TokenBalance, index: number): ReactElement<HTMLTableRowElement> => {
-    const t = getTokenData(token.contractAddress);
+  const getTokenRow = (token: TokenFormatted, index: number): ReactElement<HTMLTableRowElement> => {
+    const imageUrl = token.metadata.logo ||  '/placeholder-100.svg';
+    const tokenBalance = formatValue(parseFloat(token.balance), parseInt(token.metadata.decimals));
+    const tokenPrice = token.price.value;
     return (
-      <tr key={token.contractAddress + index}>
+      <tr key={index}>
         <td>
           <div className="h-[50px] w-[50px] relative">
-            <Image src={t.logoURI} alt={t.name} className="w-full h-full rounded-full object-cover" width="50" height="50" />
+            <Image src={imageUrl} alt={token.metadata.symbol} className="w-full h-full rounded-full object-cover" width="50" height="50" />
           </div>
         </td>
         <td>
           <div>
-            <div className="font-medium text-base">{t.name}</div>
-            <div className="text-sm text-gray-500">{token.contractAddress}</div>
+            <div className="font-medium text-base">{token.metadata.name}</div>
+            <div className="text-sm text-gray-500">{token.address}</div>
           </div>
         </td>
         <td>
           <div className="text-right">
-          {formatValue(parseFloat(token.tokenBalanceDecimal), parseInt(t.decimals))}
+            $ {formatValueUsd(1, tokenPrice)}
+          </div>
+        </td>
+        <td>
+          <div className="text-right">
+            {tokenBalance.toFixed(4)} {token.metadata.symbol}
+          </div>
+        </td>
+        <td>
+          <div className="text-right">
+           $ {formatValueUsd(tokenBalance, tokenPrice)}
           </div>
         </td>
       </tr>
-    )
+    );
   }
 
   const renderHeader = () => (
@@ -61,23 +80,25 @@ const TokensTable: React.FC<TokensTableProps> = ({ tokenBalances, tokensCache })
       <tr>
         <th></th>
         <th>Token</th>
+        <th className="text-right">Price (USD)</th>
         <th className="text-right">Balance</th>
+        <th className="text-right">Value (USD)</th>
       </tr>
     </thead>
   )
 
-  const renderBody = (currentTokens: TokenBalance[]) => (
+  const renderBody = (tokens: TokenFormatted[]) => (
     <tbody>
-      {currentTokens.map((token, index) => getTokenRow(token, index))}
+      {tokens.map((token, index) => getTokenRow(token, index))}
     </tbody>
   );
 
   return (
     <PaginatedTable
-      data={tokenBalances}
+      data={tokens}
       pageSize={10}
       renderHeader={() => renderHeader()}
-      renderBody={(currentData) => renderBody(currentData)}
+      renderBody={(data) => renderBody(data)}
       itemName="tokens"
     />
   )
