@@ -27,7 +27,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ txs, unit }) => {
     return `${hash.slice(0, length)}...${hash.slice(-4)}`;
   };
 
-  const renderHeader = () => {
+  const renderHeader = () => (
     <thead>
       <tr>
         <th>Hash</th>
@@ -39,7 +39,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ txs, unit }) => {
         <th>Status</th>
       </tr>
     </thead>
-  }
+  );
 
   const renderBody = (currentTransactions: Transaction[]) => (
     <tbody>

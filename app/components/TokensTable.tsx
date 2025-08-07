@@ -56,7 +56,7 @@ const TokensTable: React.FC<TokensTableProps> = ({ tokenBalances, tokensCache })
     )
   }
 
-  const renderHeader = () => {
+  const renderHeader = () => (
     <thead>
       <tr>
         <th></th>
@@ -64,7 +64,7 @@ const TokensTable: React.FC<TokensTableProps> = ({ tokenBalances, tokensCache })
         <th className="text-right">Balance</th>
       </tr>
     </thead>
-  }
+  )
 
   const renderBody = (currentTokens: TokenBalance[]) => (
     <tbody>
