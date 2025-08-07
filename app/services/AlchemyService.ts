@@ -32,21 +32,42 @@ interface TokenMetaData {
   logo: string;
 };
 
-interface BaseData {
+/**
+ * Responses could optionally contain a pageKey key
+ */
+interface PageKey {
   pageKey?: string;
 }
 
+/**
+ * All responses will contain a data key with an optional PageKey.
+ */
 interface APIResponse {
-  data: BaseData;
+  data: PageKey;
 }
 
-interface TokensByWalletData extends BaseData {
+/**
+ * TokensByWallet response has a tokens key in addition to the
+ * optional pageKey key.
+ *
+ * Expected format:
+ * {
+ *   "data": {
+ *     "tokens": [...]
+ *     "pageKey": ""
+ *   }
+ * }
+ */
+interface TokensByWalletData extends PageKey {
   tokens: TokensByWallet[];
 }
+
+/**
+ * Extend the default response with TokensByWalletData
+ */
 interface APIResponse_TokensByWallet extends APIResponse {
   data: TokensByWalletData;
 }
-
 
 export class AlchemyService {
   /**
@@ -144,7 +165,13 @@ export class AlchemyService {
     throw new Error('Unexpected API response format');
   }
 
-  async getTokenBalance(address: string): Promise<TokenFormatted[]> {
+  /**
+   * Public function for getting token balances for a given wallet address.
+   *
+   * @param address string
+   * @returns TokenFormatted[]
+   */
+  public async getTokenBalance(address: string): Promise<TokenFormatted[]> {
     if (!address) {
       throw new Error('Missing wallet address');
     }

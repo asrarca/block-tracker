@@ -4,7 +4,6 @@ import TransactionTable from './TransactionTable';
 import TokensTable from './TokensTable';
 import { Transaction } from '../types/Transaction';
 import config from '../config';
-import { TokenMetaData } from '@/app/types/TokenMetaData';
 import { BalanceResult, PriceResult } from '@/app/services/EtherscanService';
 import { TokenFormatted } from '@/app/services/AlchemyService';
 
@@ -24,11 +23,10 @@ interface SearchHistoryItem {
 
 interface WalletSearchProps {
   price: PriceResult;
-  tokensCache: Map<string, TokenMetaData>;
 }
 
 
-const WalletSearch: React.FC<WalletSearchProps> = ({ price, tokensCache }) => {
+const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [chainId, setChainId] = useState<string>('1'); // Default to Ethereum
   const [walletData, setWalletData] = useState<WalletData | null>(null);
