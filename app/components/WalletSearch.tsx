@@ -206,7 +206,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
         <div className="relative inline-block" ref={dropdownRef}>
           <input
             type="text"
-            placeholder="Enter wallet address"
+            placeholder="Enter valid wallet address (0x...)"
             className="input mr-1 w-96 font-mono"
             value={walletAddress}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWalletAddress(e.target.value)}
@@ -248,7 +248,7 @@ const WalletSearch: React.FC<WalletSearchProps> = ({ price }) => {
         <button
           className="btn btn-primary rounded-md"
           onClick={handleClick}
-          disabled={loading || !walletAddress.trim()}
+          disabled={loading || !walletAddress.trim() || !/^0x[0-9a-fA-F]{40}$/.test(walletAddress)}
         >
           {loading ? 'Loading...' : 'Go'}
         </button>
