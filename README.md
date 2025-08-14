@@ -6,14 +6,14 @@ Block Tracker is a blockchain wallet explorer application that allows users to s
 
 - **Multi-Chain Wallet Search**: Search for wallet addresses across Ethereum, Binance Chain, Polygon, Arbitrum, and Base Chain networks
 - **Real-Time Balance Display**: View current wallet balances in native currencies (ETH, BNB, MATIC, ARBI, BASE)
-- **Transaction History**: Browse complete transaction history for any wallet address
+- **Transaction History**: Browse recent transaction history for any wallet address
 - **Chain Selection**: Easy dropdown selection to switch between different blockchain networks
 - **Live Data**: Real-time blockchain data fetched through the Etherscan and Alchemy APIs
 - **Search History**: Recent searches are saved in localStorage, offering better UX
 - **Responsive Interface**: Clean, user-friendly interface, including dark mode toggle
 
 
-Users simply enter a wallet address, select their desired blockchain network, and then hit the submit butotn to view wallet information including current balance and transaction history.
+Users simply enter a wallet address, select their desired blockchain network, and then hit the submit button to view wallet information including current balance and transaction history.
 
 ## Technology Stack
 
