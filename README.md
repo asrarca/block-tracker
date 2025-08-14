@@ -39,7 +39,14 @@ Users simply enter a wallet address, select their desired blockchain network, an
 
 ## Getting Started
 
-First, run the development server:
+First, add your Etherscan and Alchemy API keys to `.env.local` like this:
+
+```
+ETHERSCAN_API_KEY=YOUR_API_KEY_GOES_HERE
+ALCHEMY_API_KEY=YOUR_API_KEY_GOES_HERE
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -47,9 +54,3 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Add your Etherscan and Alchemy API keys to `.env.local` like this:
-
-```
-ETHERSCAN_API_KEY=YOUR_API_KEY_GOES_HERE
-ALCHEMY_API_KEY=YOUR_API_KEY_GOES_HERE
-```
